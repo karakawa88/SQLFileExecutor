@@ -1,0 +1,6 @@
+chardet>=4.*
+cssselect>=1.*
+libpyka==0.1.*
+lxml>=4.*
+psycopg2>=2.*
+requests>=2.*

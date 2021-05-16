@@ -1,0 +1,15 @@
+*.log
+*.o
+*.gch
+__pycache__
+venv
+dist
+build
+tmp
+*.egg-info
+*.whl
+*.tar.gz
+*.lock
+sample.py
+chapter15
+

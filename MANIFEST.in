@@ -1,0 +1,11 @@
+include LICENSE.txt
+include *.md
+include mypy.ini
+include requirements.txt
+include test-requirements.txt
+recursive-include conf *
+recursive-include data *
+recursive-include tests *
+exclude sample.py
+exclude chapter15
+
