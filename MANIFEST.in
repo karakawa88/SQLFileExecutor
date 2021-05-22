@@ -8,4 +8,8 @@ recursive-include data *
 recursive-include tests *
 exclude sample.py
 exclude chapter15
+exclude conf/postgres.ini
+exclude libpyka
+exclude tmp
+
 

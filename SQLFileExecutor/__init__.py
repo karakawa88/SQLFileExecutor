@@ -4,5 +4,5 @@ __version__      = '0.1.0'
 __license__      = 'MIT'
 __author__       = 'Kentarou Arakawa'
 __author_email__ = 'kagalpan@kacpp.xyz'
-__url__          = ''
+__url__          = 'https://github.com/karakawa88/SQLFileExecutor'
 

@@ -2,14 +2,24 @@
 モジュール名はSQLFileExecutor。
 """
 
+from typing import Optional, Union, Any
+from typing import NoReturn
+from typing import Dict
+from typing import TypeVar, Generic, NewType, Type, ClassVar
+from typing import IO, TextIO, BinaryIO
+from collections.abc import Callable
+from collections.abc import Sequence, Iterable
+
 import re
 import sys
 import traceback
 import copy
 import psycopg2
 import psycopg2.extras
-import pypostgres
+from db import pypostgres
 
+# DB接続オブジェクト
+C = TypeVar('C')
 """SQLファイルを読み込み、SQL文を抽出しそれをすべて実行するクラス。
 まずSQLファイルはSQL文が記述されているファイルで;でSQL文が区切られている必要がある。
 この複数のSQLファイルをリストにしてコンストラクタに渡す。
@@ -38,21 +48,26 @@ class SQLFileExecutor():
     SQLCOMMANDS = ['SELECT', 'INSERT', 'DELETE', 'UPDATE', 'CREATE', 'ALTER', 'DROP']
     
     # コンストラクタ
-    def __init__(self, sql_files, dbcon):
-        self.__sql_files = copy.copy(sql_files)
-        self.__sql_commands = [];
-        self.__dbcon = dbcon
+    def __init__(self, sql_files: list[str], dbcon: C):
+        self.__sql_files: Sequence[str] = copy.copy(sql_files)
+        self.__sql_commands: Sequence[Sequence[str]]= [];
+        self.__dbcon: C = dbcon
         self._read_sql()
 
-    def _read_sql(self):
+
+    def _read_sql(self) -> None:
         """SQLファイルを読み込みSQL文を抽出する。
         Raises:
             IOError SQLファイルエラー
             Error   SQL文抽出中にエラー
         """
         sqlcoms = '|'.join(SQLFileExecutor.SQLCOMMANDS)
-        sqlreg = re.compile(r'(?:{})[ \t]+.*?;'.format(sqlcoms), re.DOTALL)
+        # SQL文の正規表現とSQLのコメントの正規表現
+        sqlreg = re.compile(r'(?:{})[ \t]+.*?;'.format(sqlcoms), 
+                                flags=re.DOTALL|re.IGNORECASE)
         sqlcommreg = re.compile(r'^-+.*$')
+        # セミコロンと改行を削除するラムダ関数
+        delfn = lambda sql: sql.replace("\n", " ").replace(";", "")
         fin = None
         for fname in self.sql_files:
             try:
@@ -63,8 +78,10 @@ class SQLFileExecutor():
                 # SQL文の抽出
                 commands = sqlreg.findall(contents)
                 # 後々処理がしやすいように前後の空白を削除
-                commands = [sql.strip() for sql in commands]
+                # またセミコロンと改行を削除
+                commands = [delfn(sql.strip()) for sql in commands]
                 self.__sql_commands.append(commands)
+                fin = None
             except IOError as ie:
                 print("IOError: {} ファイル読み込みエラー SQL文抽出中にエラー".format(fname), 
                         file=sys.stderr)
@@ -73,7 +90,7 @@ class SQLFileExecutor():
                 print("Error: {} SQL文抽出中にエラー".format(fname), file=sys.stderr)
                 raise ex
             finally:
-                if not fin:
+                if fin is not None:
                     fin.close()
         print('SQL: ', self.sql_commands)
 
@@ -111,7 +128,7 @@ class SQLFileExecutor():
             cur.close()
     
     @property
-    def sql_files(self):
+    def sql_files(self) -> list[str]:
         """SQLファイル名のリストを返す。
         Returns: 
             list[str]: SQLファイル名のリスト
@@ -119,11 +136,53 @@ class SQLFileExecutor():
         return copy.copy(self.__sql_files)
 
     @property
-    def sql_commands(self):
+    def sql_commands(self) -> list[list[str]]:
         """SQLコマンドのリストを返す
         Returns:
             list[str]: SQLコマンドのリスト
         """
         return copy.copy(self.__sql_commands)
 
+import sys
+from pathlib import Path
+from db import pypostgres
 
+def check_file_list_exists(files: Iterable[str]) -> None:
+    """引数のSQLファイルのリストが存在するか確認する。
+    SQLファイルが全て存在する場合は何もしない。
+    存在しない場合は例外IOErrorを送出する。
+    Raises:
+        IOError: ファイルが存在しない
+    """
+    for fname in files:
+        path = Path(fname)
+        if not path.exists():
+            raise IOError(f'SQLファイル[{fname}]が存在しません。')
+
+def main() -> None:
+    dbcon = None
+    try:
+        # DB接続
+        ini_file = "conf/postgres.ini"
+        dbcon = pypostgres.get_config_connection(ini_file, 'PostgreSQL')
+        print("DB接続", dbcon)
+
+        sql_files = sys.argv[1:]
+        print(sql_files)
+        check_file_list_exists(sql_files)
+        sqlexec = SQLFileExecutor(sql_files, dbcon)
+        sqlexec.exec()
+        print("SQL実行終了")
+    except IOError as ie:
+        print(ie)
+        sys.exit(2)
+    except Exception as ex:
+        print(ex)
+        sys.exit(3)
+    finally:
+        print("SQL COMMITとDB切断")
+        dbcon.commit()
+        dbcon.close()
+
+if __name__ == '__main__':
+    main()
