@@ -2,7 +2,7 @@ version: 2
 jobs:
     setup_dependencies:
         docker:
-            - image: circleci/python:3.8.5
+            - image: kagalpandh/kacpp-pydev
         steps:
             - checkout
             - restore_cache:
@@ -16,7 +16,7 @@ jobs:
                     - "~/.local"
     test:
         docker:
-            - image: circleci/python:3.8.5
+            - image: kagalpandh/kacpp-pydev
         steps:
             - checkout
             - restore_cache:
@@ -24,16 +24,16 @@ jobs:
             - run:
                 command: |
                     python3 -m unittest discover tests -v
-    thint:
-        docker:
-            - image: circleci/python:3.8.5
-        steps:
-            - checkout
-            - restore_cache:
-                key: deps-{{ checksum "requirements.txt" }}
-            - run:
-                command: |
-                    mypy --config-file=mypy.ini libpyka
+#     thint:
+#         docker:
+#             - image: circleci/python:3.8.5
+#         steps:
+#             - checkout
+#             - restore_cache:
+#                 key: deps-{{ checksum "requirements.txt" }}
+#             - run:
+#                 command: |
+#                     mypy --config-file=mypy.ini libpyka
 workflows:
   version: 2
   all:
@@ -42,8 +42,8 @@ workflows:
         - test:
             requires:
                 - setup_dependencies
-        - thint:
-            requires:
-                - test
+#         - thint:
+#             requires:
+#                 - test
 
 

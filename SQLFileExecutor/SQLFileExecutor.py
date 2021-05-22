@@ -94,7 +94,7 @@ class SQLFileExecutor():
                     fin.close()
         print('SQL: ', self.sql_commands)
 
-    def exec(self):
+    def exec(self) -> None:
         """抽出したSQL文をすべて実行する。
         SQL文を全てを実行したらコミットされる。
         エラー時はロールバックされる。
@@ -181,8 +181,9 @@ def main() -> None:
         sys.exit(3)
     finally:
         print("SQL COMMITとDB切断")
-        dbcon.commit()
-        dbcon.close()
+        if dbcon is not None:
+            dbcon.commit()
+            dbcon.close()
 
 if __name__ == '__main__':
     main()
