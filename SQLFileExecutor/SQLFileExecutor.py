@@ -18,8 +18,6 @@ import psycopg2
 import psycopg2.extras
 from db import pypostgres
 
-# DB接続オブジェクト
-C = TypeVar('C')
 """SQLファイルを読み込み、SQL文を抽出しそれをすべて実行するクラス。
 まずSQLファイルはSQL文が記述されているファイルで;でSQL文が区切られている必要がある。
 この複数のSQLファイルをリストにしてコンストラクタに渡す。
@@ -48,10 +46,10 @@ class SQLFileExecutor():
     SQLCOMMANDS = ['SELECT', 'INSERT', 'DELETE', 'UPDATE', 'CREATE', 'ALTER', 'DROP']
     
     # コンストラクタ
-    def __init__(self, sql_files: list[str], dbcon: C):
-        self.__sql_files: Sequence[str] = copy.copy(sql_files)
-        self.__sql_commands: Sequence[Sequence[str]]= [];
-        self.__dbcon: C = dbcon
+    def __init__(self, sql_files: list[str], dbcon: Any):
+        self.__sql_files: list[str] = copy.copy(sql_files)
+        self.__sql_commands: list[list[str]]= [];
+        self.__dbcon: Any = dbcon
         self._read_sql()
 
 
@@ -66,8 +64,11 @@ class SQLFileExecutor():
         sqlreg = re.compile(r'(?:{})[ \t]+.*?;'.format(sqlcoms), 
                                 flags=re.DOTALL|re.IGNORECASE)
         sqlcommreg = re.compile(r'^-+.*$')
-        # セミコロンと改行を削除するラムダ関数
-        delfn = lambda sql: sql.replace("\n", " ").replace(";", "")
+
+        # セミコロンと改行を削除する内部関数
+        def delfn(sql: str) -> str:
+            return sql.replace("\n", " ").replace(";", "")
+
         fin = None
         for fname in self.sql_files:
             try:
@@ -125,7 +126,8 @@ class SQLFileExecutor():
         finally:
             # エラーが起きたらrollback()される
             dbcon.commit()
-            cur.close()
+            if cur is not None:
+                cur.close()
     
     @property
     def sql_files(self) -> list[str]:
