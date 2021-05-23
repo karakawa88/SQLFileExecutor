@@ -10,6 +10,7 @@ tmp
 *.whl
 *.tar.gz
 *.lock
+.mypy_cache
 sample.py
 chapter15
 libpyka

@@ -16,7 +16,9 @@ import traceback
 import copy
 import psycopg2
 import psycopg2.extras
+# import psycopg2.Error
 from db import pypostgres
+from db.SQLException import SQLException
 
 """SQLファイルを読み込み、SQL文を抽出しそれをすべて実行するクラス。
 まずSQLファイルはSQL文が記述されているファイルで;でSQL文が区切られている必要がある。
@@ -88,8 +90,9 @@ class SQLFileExecutor():
                         file=sys.stderr)
                 raise ie
             except Exception as ex:
-                print("Error: {} SQL文抽出中にエラー".format(fname), file=sys.stderr)
-                raise ex
+                msg = "Error: {} SQL文抽出中にエラー".format(fname) 
+                print(msg, file=sys.stderr)
+                raise Exception(msg)
             finally:
                 if fin is not None:
                     fin.close()
@@ -110,19 +113,15 @@ class SQLFileExecutor():
                     try:
                         print('SQL: ', sql)
                         cur.execute(sql)
-                    except psycopg2.InternalError as ie:
-                        print('Error: SQLFile={file},SQL {sql}'.format(file=self.sql_files[idx],
-                            sql=sql))
-                        print(traceback.format_exc())
-                        raise ie
                     except psycopg2.Error as ex:
                         print('Error: SQLFile={file},SQL {sql}'.format(file=self.sql_files[idx],
                             sql=sql))
                         print(traceback.format_exc())
                         raise ex
-        except psycopg2.Error as ex:
-            print('Error: cursor取得エラー dbcon={}'.format(str(dbcon)))
-            raise ex
+        except Exception as ex:
+            msg = 'Error: SQL実行エラー sql={}'.format(sql)
+            print(msg)
+            raise SQLException(msg)
         finally:
             # エラーが起きたらrollback()される
             dbcon.commit()

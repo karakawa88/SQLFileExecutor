@@ -6,9 +6,12 @@ from typing import IO, TextIO, BinaryIO
 from collections.abc import Callable
 from collections.abc import Sequence, Iterable
 
+import psycopg2
 import unittest
 from db import pypostgres
+from db.SQLException import SQLException
 from SQLFileExecutor.SQLFileExecutor import SQLFileExecutor
+
 
 # PostgreSQLのカーソルの型
 CUR = TypeVar('CUR')
@@ -93,6 +96,21 @@ class SQLFileExecutorTest(unittest.TestCase):
         except Exception as ex:
             print(ex)
     
+    def test_exec_error(self) -> None:
+        """SQL文でエラーが発生した場合はSQLExceptionをスローするかテストする。
+        Reises:
+            SQLException: SQLエラー
+        """
+        sql_files = [
+                        "tests/data/CTtest.sql", 
+                        "tests/data/CTblog_entry.sql",
+                        "tests/data/error_table.sql"
+                    ]
+        dbcon = self.__dbcon
+        with self.assertRaises(SQLException):
+            sqlexec = SQLFileExecutor(sql_files, dbcon)
+            sqlexec.exec()
+
     def drop_db_objects(self) -> None:
         """テストで作成したDBのオブジェクトを全て削除する。
         Raises:
