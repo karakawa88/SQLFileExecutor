@@ -1,7 +1,4 @@
-chardet>=4.*
-cssselect>=1.*
 libpyka>=0.1.*
-lxml>=4.*
-psycopg2==2.8.6
+mypy @ git+git://github.com/python/mypy.git@b633ae123b816e45058853d42bbd9a1f82af1a23
+psycopg2>=2.8.*
 requests>=2.*
-mypy>=0.*
