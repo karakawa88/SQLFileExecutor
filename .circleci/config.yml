@@ -13,6 +13,9 @@ jobs:
                     # mypyはPyPIのライブラリーはPython-3.8までの型ヒント機能しか持たないため
                     # 最新版をGitから取得してインストールする必要がある。
                     python3 -m pip install -U git+git://github.com/python/mypy.git
+                    # psycopg2はそのまま入れるとコンパイル作業も必要なので
+                    # バイナリ版を別途入れる
+                     pip3 install psycopg2-binary
             - save_cache:
                 key: deps-{{ checksum "requirements.txt" }}
                 paths:
