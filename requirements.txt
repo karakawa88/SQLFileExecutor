@@ -1,3 +1,2 @@
 libpyka>=0.1.*
-psycopg2>=2.8.*
 requests>=2.*
