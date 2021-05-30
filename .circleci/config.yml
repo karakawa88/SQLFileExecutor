@@ -15,10 +15,9 @@ jobs:
                     python3 -m pip install --user -U git+git://github.com/python/mypy.git
                     # psycopg2はそのまま入れるとコンパイル作業も必要なので
                     # バイナリ版を別途入れる
-#                     pip3 install psycopg2-binary
+                    # pip3 install psycopg2-binary
                     # psycopg2を使用するライブラリが依存していると通常のライブラリがインストールされ
                     # Cのコンパイル作業が入るので別途インストール
-                    pip3 install --user libpyka
             - save_cache:
                 key: deps-{{ checksum "requirements.txt" }}
                 paths:
