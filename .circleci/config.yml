@@ -2,7 +2,7 @@ version: 2
 jobs:
     setup_dependencies:
         docker:
-            - image: kagalpandh/kacpp-pydev
+            - image: kagalpandh/kacpp-cppdev
         steps:
             - checkout
             - restore_cache:
@@ -12,20 +12,20 @@ jobs:
                     pip3 install --user -r requirements.txt
                     # mypyはPyPIのライブラリーはPython-3.8までの型ヒント機能しか持たないため
                     # 最新版をGitから取得してインストールする必要がある。
-                    python3 -m pip install -U git+git://github.com/python/mypy.git
+                    python3 -m pip install --user -U git+git://github.com/python/mypy.git
                     # psycopg2はそのまま入れるとコンパイル作業も必要なので
                     # バイナリ版を別途入れる
-                    pip3 install psycopg2-binary
+#                     pip3 install psycopg2-binary
                     # psycopg2を使用するライブラリが依存していると通常のライブラリがインストールされ
                     # Cのコンパイル作業が入るので別途インストール
-                    pip3 install libpyka
+                    pip3 install --user libpyka
             - save_cache:
                 key: deps-{{ checksum "requirements.txt" }}
                 paths:
                     - "~/.local"
     test:
         docker:
-            - image: kagalpandh/kacpp-pydev
+            - image: kagalpandh/kacpp-cppdev
         steps:
             - checkout
             - restore_cache:
@@ -35,14 +35,14 @@ jobs:
                     python3 -m unittest discover -s tests -v
     thint:
         docker:
-            - image: circleci/python:3.8.5
+            - image: kagalpandh/kacpp-cppdev
         steps:
             - checkout
             - restore_cache:
                 key: deps-{{ checksum "requirements.txt" }}
             - run:
                 command: |
-                    mypy --config-file=mypy.ini SQLFileExecutor
+                    python3 -m mypy --config-file=mypy.ini SQLFileExecutor
 workflows:
   version: 2
   all:
