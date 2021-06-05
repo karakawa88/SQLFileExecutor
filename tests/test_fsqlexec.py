@@ -11,7 +11,7 @@ import unittest
 from db import pypostgres
 from db.SQLException import SQLException
 from SQLFileExecutor import SQLFileExecutor
-from SQLFileExecutor.fsqlexec import check_file_list_exists, fname_line_to_array, create_SQLFileExecutor
+from SQLFileExecutor.fsqlexec import check_file_list_exists, fname_line_to_array, create_sql_files
 
 class FSQLExecTest(unittest.TestCase):
     """fsqlexecモジュールのテスト。コマンドもテストする。
@@ -50,7 +50,19 @@ class FSQLExecTest(unittest.TestCase):
         with self.assertRaises(IOError):
             expected = fname_line_to_array(fname)
     
-        
+    def test_create_sql_files_ok(self):
+        """create_sql_files()関数のテスト。
+        ファイルのリストからexclude_fileのファイルのリストを除外しているかテスト。
+        """
+        includes_files = [
+                "tests/data/CTblog_entry.sql", "tests/data/CTtest.sql",
+                "tests/data/drop_all.sql", "tests/data/error_table.sql"
+        ]
+        exclude_file = "tests/data/exclude_file.txt"
+        result = ["tests/data/CTblog_entry.sql", "tests/data/CTtest.sql"]
+        expected = create_sql_files(includes_files, exclude_file)
+        self.assertEqual(result, expected)
+
 # def check_file_list_exists(files: Iterable[str]) -> None:
 # def fname_line_to_array(fname: Optional[str]) -> list[str]:
 # def create_sql_files(include_file: Sequence[str], exclude_file: str) -> list[str]:
