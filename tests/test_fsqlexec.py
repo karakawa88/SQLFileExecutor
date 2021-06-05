@@ -33,6 +33,24 @@ class FSQLExecTest(unittest.TestCase):
         with self.assertRaises(IOError):
             self.assertTrue(check_file_list_exists(sql_files))
 
+    def test_fname_line_to_array_ok(self):
+        """fname_line_to_array()関数のテスト。
+        行をリストにして返すかテストする。
+        """
+        fname = "tests/data/exclude_file.txt"
+        result = ["tests/data/drop_all.sql", "tests/data/error_table.sql"]
+        expected = fname_line_to_array(fname)
+        self.assertEqual(result, expected)
+
+    def test_fname_line_to_array_exception(self):
+        """fname_line_to_array()関数のテスト。
+        引数のファイル名のファイルが存在しない場合例外をスローするかテスト。
+        """
+        fname = "tests/data/exclude.txt"
+        with self.assertRaises(IOError):
+            expected = fname_line_to_array(fname)
+    
+        
 # def check_file_list_exists(files: Iterable[str]) -> None:
 # def fname_line_to_array(fname: Optional[str]) -> list[str]:
 # def create_sql_files(include_file: Sequence[str], exclude_file: str) -> list[str]:

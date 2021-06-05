@@ -1,0 +1,2 @@
+tests/data/drop_all.sql
+tests/data/error_table.sql

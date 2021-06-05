@@ -117,7 +117,7 @@ class SQLFileExecutorTest(unittest.TestCase):
             SQLException: DB削除エラー
         """
         try:
-            sql_files = ["tests/data/drop_all.txt"]
+            sql_files = ["tests/data/drop_all.sql"]
             dbcon = self.__dbcon
             sqlexec = SQLFileExecutor(sql_files, dbcon)
             sqlexec.exec()

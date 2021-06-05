@@ -50,6 +50,7 @@ def fname_line_to_array(fname: Optional[str]) -> list[str]:
         raise IOError(f'Excludeファイル[{fname}]が存在しません。')
     with open(fname, "r") as fp:
         ret = fp.readlines()
+        ret = [line.rstrip() for line in ret]
     return ret
 
 def create_sql_files(include_file: Sequence[str], exclude_file: str) -> list[str]:
