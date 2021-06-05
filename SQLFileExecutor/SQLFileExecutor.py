@@ -48,8 +48,8 @@ class SQLFileExecutor():
     SQLCOMMANDS = ['SELECT', 'INSERT', 'DELETE', 'UPDATE', 'CREATE', 'ALTER', 'DROP']
     
     # コンストラクタ
-    def __init__(self, sql_files: list[str], dbcon: Any):
-        self.__sql_files: list[str] = copy.copy(sql_files)
+    def __init__(self, sql_files: Sequence[str], dbcon: Any):
+        self.__sql_files: Sequence[str] = copy.copy(sql_files) # type: ignore
         self.__sql_commands: list[list[str]]= [];
         self.__dbcon: Any = dbcon
         self._read_sql()
@@ -139,19 +139,21 @@ class SQLFileExecutor():
 
 
     @property
-    def sql_files(self) -> list[str]:
+    def sql_files(self) -> Any:
         """SQLファイル名のリストを返す。
         Returns: 
             list[str]: SQLファイル名のリスト
         """
-        return copy.copy(self.__sql_files)
+        ret = copy.copy(self.__sql_files) # type: ignore
+        return ret 
 
     @property
-    def sql_commands(self) -> list[list[str]]:
+    def sql_commands(self) -> Any:
         """SQLコマンドのリストを返す
         Returns:
             list[str]: SQLコマンドのリスト
         """
-        return copy.copy(self.__sql_commands)
+        ret = copy.copy(self.__sql_commands) # type: ignore
+        return ret
 
 

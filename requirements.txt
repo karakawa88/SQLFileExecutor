@@ -1,4 +1,4 @@
 psycopg2>=2.*
 libpyka>=0.*
 requests>=2.*
-
+click>=8.*

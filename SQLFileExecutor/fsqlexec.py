@@ -14,6 +14,7 @@ import sys
 from pathlib import Path
 from db import pypostgres
 from .SQLFileExecutor import SQLFileExecutor
+import click
 
 def check_file_list_exists(files: Iterable[str]) -> bool:
     """引数のSQLファイルのリストが存在するか確認する。
@@ -65,10 +66,10 @@ def create_sql_files(include_file: Sequence[str], exclude_file: str) -> list[str
     """
     excludes = fname_line_to_array(exclude_file)
     ret = [fname for fname in include_file if fname not in excludes]
-    check_file_list_exists(sql_files)
+    check_file_list_exists(ret)
     return ret
 
-def create_SQLFileExecutor(sql_files: Sequence[str], ini_file: str) -> Type[SQLFileExecutor]:
+def create_SQLFileExecutor(sql_files: Sequence[str], ini_file: str) -> SQLFileExecutor:
     """SQLFileExecutorオブジェクトを作成して返す。
     Args:
         sql_files (Sequence[str]): SQLファイルのリスト
@@ -88,8 +89,8 @@ def create_SQLFileExecutor(sql_files: Sequence[str], ini_file: str) -> Type[SQLF
 @click.command()
 @click.option("--exclude-file", "exclude_file", type=str, default=None, help="Exclude SQL file")
 @click.option("--ini-file", "ini_file", type=str, default="postgres.ini", help="DB接続.iniファイル")
-@click.argment("sql_files", nargs=-1)
-def cmd(exclude_file: str, ini_file: str) -> None:
+@click.argument("sql_files", nargs=-1)
+def cmd(exclude_file: str, ini_file: str, sql_files: Sequence[str]) -> None:
     sqlexec = None
     try:
         sql_files = create_sql_files(sql_files, exclude_file)
@@ -104,7 +105,8 @@ def cmd(exclude_file: str, ini_file: str) -> None:
         print(ex)
         sys.exit(3)
     finally:
-        sqlexec.close()
+        if sqlexec is not None:
+            sqlexec.close()
 
 
 def main() -> None:
