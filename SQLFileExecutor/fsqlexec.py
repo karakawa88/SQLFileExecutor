@@ -13,7 +13,7 @@ from collections.abc import Sequence, Iterable
 import sys
 from pathlib import Path
 from db import pypostgres
-from SQLFileExecutor import SQLFileExecutor
+from .SQLFileExecutor import SQLFileExecutor
 import click
 
 def check_file_list_exists(files: Iterable[str]) -> bool:

@@ -11,7 +11,7 @@ import unittest
 from db import pypostgres
 from db.SQLException import SQLException
 from SQLFileExecutor import SQLFileExecutor
-from fsqlexec import check_file_list_exists, fname_line_to_array, create_SQLFileExecutor
+from SQLFileExecutor.fsqlexec import check_file_list_exists, fname_line_to_array, create_SQLFileExecutor
 
 class FSQLExecTest(unittest.TestCase):
     """fsqlexecモジュールのテスト。コマンドもテストする。
