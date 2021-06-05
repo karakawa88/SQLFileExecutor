@@ -10,7 +10,7 @@ import psycopg2
 import unittest
 from db import pypostgres
 from db.SQLException import SQLException
-from SQLFileExecutor.SQLFileExecutor import SQLFileExecutor
+from SQLFileExecutor import SQLFileExecutor
 from fsqlexec import check_file_list_exists, fname_line_to_array, create_SQLFileExecutor
 
 class FSQLExecTest(unittest.TestCase):
@@ -24,7 +24,7 @@ class FSQLExecTest(unittest.TestCase):
         sql_files = ["CTblog_entry.sql", "CTtest.sql"]
         self.assertTrue(check_file_list_exists(sql_files))
 
-    def test_check_file_list_exists_ok(self) -> None:
+    def test_check_file_list_exists_exception(self) -> None:
         """ファイルのリストのファイルが存在しない場合例外を投げるかテスト。
         Raises:
             IOError: ファイルが存在しない
