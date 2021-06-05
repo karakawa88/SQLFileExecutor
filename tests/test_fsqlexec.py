@@ -21,7 +21,7 @@ class FSQLExecTest(unittest.TestCase):
         Raises:
             IOError: ファイルが存在しない
         """
-        sql_files = ["CTblog_entry.sql", "CTtest.sql"]
+        sql_files = ["tests/data/CTblog_entry.sql", "tests/data/CTtest.sql"]
         self.assertTrue(check_file_list_exists(sql_files))
 
     def test_check_file_list_exists_exception(self) -> None:
@@ -29,7 +29,7 @@ class FSQLExecTest(unittest.TestCase):
         Raises:
             IOError: ファイルが存在しない
         """
-        sql_files = ["CTblog_entry.sql", "CTtest.sql", "CThogehoge.sql"]
+        sql_files = ["tests/data/CTblog_entry.sql", "tests/data/CTtest.sql", "tests/data/CThogehoge.sql"]
         with self.assertRaises(IOError):
             self.assertTrue(check_file_list_exists(sql_files))
 
