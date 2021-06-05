@@ -128,6 +128,16 @@ class SQLFileExecutor():
             if cur is not None:
                 cur.close()
     
+    def close(self) -> None:
+        """DB接続を切断する。
+        """
+        print("SQL COMMITとDB切断")
+        dbcon = self.__dbcon
+        if dbcon is not None:
+            dbcon.commit()
+            dbcon.close()
+
+
     @property
     def sql_files(self) -> list[str]:
         """SQLファイル名のリストを返す。
@@ -144,47 +154,4 @@ class SQLFileExecutor():
         """
         return copy.copy(self.__sql_commands)
 
-import sys
-from pathlib import Path
-from db import pypostgres
 
-def check_file_list_exists(files: Iterable[str]) -> None:
-    """引数のSQLファイルのリストが存在するか確認する。
-    SQLファイルが全て存在する場合は何もしない。
-    存在しない場合は例外IOErrorを送出する。
-    Raises:
-        IOError: ファイルが存在しない
-    """
-    for fname in files:
-        path = Path(fname)
-        if not path.exists():
-            raise IOError(f'SQLファイル[{fname}]が存在しません。')
-
-def main() -> None:
-    dbcon = None
-    try:
-        # DB接続
-        ini_file = "conf/postgres.ini"
-        dbcon = pypostgres.get_config_connection(ini_file, 'PostgreSQL')
-        print("DB接続", dbcon)
-
-        sql_files = sys.argv[1:]
-        print(sql_files)
-        check_file_list_exists(sql_files)
-        sqlexec = SQLFileExecutor(sql_files, dbcon)
-        sqlexec.exec()
-        print("SQL実行終了")
-    except IOError as ie:
-        print(ie)
-        sys.exit(2)
-    except Exception as ex:
-        print(ex)
-        sys.exit(3)
-    finally:
-        print("SQL COMMITとDB切断")
-        if dbcon is not None:
-            dbcon.commit()
-            dbcon.close()
-
-if __name__ == '__main__':
-    main()
