@@ -108,8 +108,14 @@ class SQLFileExecutorTest(unittest.TestCase):
                     ]
         dbcon = self.__dbcon
         with self.assertRaises(SQLException):
-            sqlexec = SQLFileExecutor(sql_files, dbcon)
-            sqlexec.exec()
+            try:
+                sqlexec = SQLFileExecutor(sql_files, dbcon)
+                sqlexec.exec()
+            except Exception as ex:
+                raise ex
+            finally:
+                self.drop_db_objects()
+                
 
     def drop_db_objects(self) -> None:
         """テストで作成したDBのオブジェクトを全て削除する。
@@ -123,7 +129,10 @@ class SQLFileExecutorTest(unittest.TestCase):
             sqlexec.exec()
         except Exception as ex:
             print(ex)
-        
+        finally:
+            if dbcon is not None:
+                dbcon.commit()
+
 
     def tearDown(self) -> None:
         """テストの後処理

@@ -11,5 +11,7 @@ exclude chapter15
 exclude conf/postgres.ini
 exclude libpyka
 exclude tmp
+exclude gitpush.sh
+exclude pypi-upload.sh
 
 

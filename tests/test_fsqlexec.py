@@ -12,10 +12,18 @@ from db import pypostgres
 from db.SQLException import SQLException
 from SQLFileExecutor import SQLFileExecutor
 from SQLFileExecutor.fsqlexec import check_file_list_exists, fname_line_to_array, create_sql_files
+from SQLFileExecutor.fsqlexec import cmd
+from click.testing import CliRunner
 
 class FSQLExecTest(unittest.TestCase):
     """fsqlexecモジュールのテスト。コマンドもテストする。
     """
+    TEST_TABLES: list[str] = ["test", "blog_entry"]
+    TEST_INDEX: list[str] = ["test_id_index", "blog_entry_user_id_index"]
+    
+#     def __init__(self) -> None:
+#         self.__dbcon = None
+
     def test_check_file_list_exists_ok(self) -> None:
         """ファイルのリストのファイルが存在するか確認する関数のテスト。
         Raises:
@@ -33,7 +41,7 @@ class FSQLExecTest(unittest.TestCase):
         with self.assertRaises(IOError):
             self.assertTrue(check_file_list_exists(sql_files))
 
-    def test_fname_line_to_array_ok(self):
+    def test_fname_line_to_array_ok(self) -> None:
         """fname_line_to_array()関数のテスト。
         行をリストにして返すかテストする。
         """
@@ -42,7 +50,7 @@ class FSQLExecTest(unittest.TestCase):
         expected = fname_line_to_array(fname)
         self.assertEqual(result, expected)
 
-    def test_fname_line_to_array_exception(self):
+    def test_fname_line_to_array_exception(self) -> None:
         """fname_line_to_array()関数のテスト。
         引数のファイル名のファイルが存在しない場合例外をスローするかテスト。
         """
@@ -50,7 +58,7 @@ class FSQLExecTest(unittest.TestCase):
         with self.assertRaises(IOError):
             expected = fname_line_to_array(fname)
     
-    def test_create_sql_files_ok(self):
+    def test_create_sql_files_ok(self) -> None:
         """create_sql_files()関数のテスト。
         ファイルのリストからexclude_fileのファイルのリストを除外しているかテスト。
         """
@@ -62,7 +70,89 @@ class FSQLExecTest(unittest.TestCase):
         result = ["tests/data/CTblog_entry.sql", "tests/data/CTtest.sql"]
         expected = create_sql_files(includes_files, exclude_file)
         self.assertEqual(result, expected)
+    
+    def test_cmd_normal(self) ->None:
+        """コマンドを実行しSQLが実行されているかテストする。
+        """
+        sql_files = [
+                "tests/data/CTblog_entry.sql", "tests/data/CTtest.sql",
+        ]
+        db_ini_file = "tests/conf/postgres.ini"
+        opts = [ "--ini-file", db_ini_file ]
+        opts.extend(sql_files)
+        runner = CliRunner()
+        result = runner.invoke(cmd, opts)
 
-# def check_file_list_exists(files: Iterable[str]) -> None:
-# def fname_line_to_array(fname: Optional[str]) -> list[str]:
-# def create_sql_files(include_file: Sequence[str], exclude_file: str) -> list[str]:
+        expected = ["test", "blog_entry", ]
+        tables =  self.table_name_list()
+        self.assertTrue(self.in_any(tables, expected))
+
+    def in_any(self, array: Sequence[Any], search: Sequence[Any]) -> bool:
+        """配列に検索する配列の要素が含まれているか
+        """
+        for entry in search:
+            if not entry in array:
+                return False
+        return True
+
+    def table_name_list(self) -> Sequence[str]:
+        """DBのテーブル名のリストを返す。
+        Returns:
+            Sequence[str]: テーブル名のリスト
+        Raises:
+            SQLException: DB接続またはSQLエラー
+        """
+        db_conn = None
+        cur = None
+        try:
+            db_conn = self.__dbcon
+            cur = db_conn.cursor()
+            ret = pypostgres.db_object_names("TABLE", cur)
+            return ret
+        except Exception as ex:
+            print(ex)
+            raise ex
+        finally:
+            if db_conn is not None:
+                if cur is not None:
+                    db_conn.commit()
+                    cur.close()
+
+    def drop_db_objects(self) -> None:
+        """テストで作成したDBのオブジェクトを全て削除する。
+        Raises:
+            SQLException: DB削除エラー
+        """
+        dbcon = None
+        try:
+            sql_files = ["tests/data/drop_all.sql"]
+            dbcon = self.__dbcon
+            sqlexec = SQLFileExecutor(sql_files, dbcon)
+            sqlexec.exec()
+        except Exception as ex:
+            print(ex)
+        finally:
+            if dbcon is not None:
+                dbcon.commit()
+        
+    def setUp(self) -> None:
+        """テストの前処理
+        DBの接続を取得する。
+        """
+        try:
+            ini_file = "tests/conf/postgres.ini"
+            self.__dbcon = pypostgres.get_config_connection(ini_file, "PostgreSQL")
+        except Exception as ex:
+            print("DB接続エラー")
+            raise ex
+
+    def tearDown(self) -> None:
+        """テストの後処理
+        作成したDBのオブジェクトを削除しDBを切断する。
+        """
+        dbcon = self.__dbcon
+        if self.__dbcon is not None:
+            self.drop_db_objects()
+            dbcon.commit()
+            dbcon.close()
+
