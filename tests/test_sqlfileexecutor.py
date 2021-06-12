@@ -67,6 +67,7 @@ class SQLFileExecutorTest(unittest.TestCase):
         sql_files = ["tests/data/CTtest.sql", "tests/data/CTblog_entry.sql"]
         dbcon = self.__dbcon
         try:
+            self.drop_db_objects()
             sqlexec = SQLFileExecutor(sql_files, dbcon)
             sqlexec.exec()
 
@@ -109,6 +110,7 @@ class SQLFileExecutorTest(unittest.TestCase):
         dbcon = self.__dbcon
         with self.assertRaises(SQLException):
             try:
+                self.drop_db_objects()
                 sqlexec = SQLFileExecutor(sql_files, dbcon)
                 sqlexec.exec()
             except Exception as ex:

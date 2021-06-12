@@ -74,6 +74,7 @@ class FSQLExecTest(unittest.TestCase):
     def test_cmd_normal(self) ->None:
         """コマンドを実行しSQLが実行されているかテストする。
         """
+        self.drop_db_objects()
         sql_files = [
                 "tests/data/CTblog_entry.sql", "tests/data/CTtest.sql",
         ]
@@ -85,6 +86,7 @@ class FSQLExecTest(unittest.TestCase):
 
         expected = ["test", "blog_entry", ]
         tables =  self.table_name_list()
+        self.drop_db_objects()
         self.assertTrue(self.in_any(tables, expected))
 
     def in_any(self, array: Sequence[Any], search: Sequence[Any]) -> bool:
