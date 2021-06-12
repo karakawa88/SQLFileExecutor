@@ -19,6 +19,9 @@ import psycopg2.extras
 # import psycopg2.Error
 from db import pypostgres
 from db.SQLException import SQLException
+from logging import getLogger
+
+logger = getLogger(__name__)
 
 """SQLファイルを読み込み、SQL文を抽出しそれをすべて実行するクラス。
 まずSQLファイルはSQL文が記述されているファイルで;でSQL文が区切られている必要がある。
@@ -53,6 +56,8 @@ class SQLFileExecutor():
         self.__sql_commands: list[list[str]]= [];
         self.__dbcon: Any = dbcon
         self._read_sql()
+        logger.debug("SQL File: " + str(self.__sql_files))
+        logger.debug("SQL Commands: " + str(self.__sql_commands))
 
 
     def _read_sql(self) -> None:
@@ -86,17 +91,15 @@ class SQLFileExecutor():
                 self.__sql_commands.append(commands)
                 fin = None
             except IOError as ie:
-                print("IOError: {} ファイル読み込みエラー SQL文抽出中にエラー".format(fname), 
-                        file=sys.stderr)
+                logger.error("IOError: {} ファイル読み込みエラー SQL文抽出中にエラー".format(fname))
                 raise ie
             except Exception as ex:
                 msg = "Error: {} SQL文抽出中にエラー".format(fname) 
-                print(msg, file=sys.stderr)
+                logger.error(msg)
                 raise Exception(msg)
             finally:
                 if fin is not None:
                     fin.close()
-        print('SQL: ', self.sql_commands)
 
     def exec(self) -> None:
         """抽出したSQL文をすべて実行する。
@@ -108,19 +111,19 @@ class SQLFileExecutor():
         try:
             cur = dbcon.cursor(cursor_factory=psycopg2.extras.DictCursor)
             for idx, commands in enumerate(self.sql_commands):
-                print('SQLファイル: ', self.sql_files[idx])
+                logger.debug('実行SQLファイル: ' + self.sql_files[idx])
                 for sql in commands:
                     try:
-                        print('SQL: ', sql)
+                        logger.debug('SQL: ', sql)
                         cur.execute(sql)
                     except psycopg2.Error as ex:
-                        print('Error: SQLFile={file},SQL {sql}'.format(file=self.sql_files[idx],
+                        logger.error('Error: SQLFile={file},SQL {sql}'.format(file=self.sql_files[idx],
                             sql=sql))
-                        print(traceback.format_exc())
+                        logger.error(traceback.format_exc())
                         raise ex
         except Exception as ex:
             msg = 'Error: SQL実行エラー sql={}'.format(sql)
-            print(msg)
+            logger.error(msg)
             raise SQLException(msg)
         finally:
             # エラーが起きたらrollback()される
@@ -131,7 +134,7 @@ class SQLFileExecutor():
     def close(self) -> None:
         """DB接続を切断する。
         """
-        print("SQL COMMITとDB切断")
+        logger.debug("SQL COMMITとDB切断")
         dbcon = self.__dbcon
         if dbcon is not None:
             dbcon.commit()

@@ -15,6 +15,9 @@ from pathlib import Path
 from db import pypostgres
 from .SQLFileExecutor import SQLFileExecutor
 import click
+from logging import getLogger
+
+logger = getLogger(__name__)
 
 def check_file_list_exists(files: Iterable[str]) -> bool:
     """引数のSQLファイルのリストが存在するか確認する。
@@ -83,7 +86,7 @@ def create_SQLFileExecutor(sql_files: Sequence[str], ini_file: str) -> SQLFileEx
     """
     # DB接続
     dbcon = pypostgres.get_config_connection(ini_file, 'PostgreSQL')
-    print("DB接続", dbcon)
+    logger.debug("DB接続" + str(dbcon))
     sqlexec = SQLFileExecutor(sql_files, dbcon)
     return sqlexec
 
@@ -94,16 +97,20 @@ def create_SQLFileExecutor(sql_files: Sequence[str], ini_file: str) -> SQLFileEx
 def cmd(exclude_file: str, ini_file: str, sql_files: Sequence[str]) -> None:
     sqlexec = None
     try:
+        logger.debug("ini file: " + ini_file)
+        logger.debug("exclude_file: " + str(exclude_file))
+        logger.info("SQL File: " + str(sql_files))
         sql_files = create_sql_files(sql_files, exclude_file)
-        print(sql_files)
+        logger.info("Exec SQL File: " + str(sql_files))
         sqlexec = create_SQLFileExecutor(sql_files, ini_file)
         sqlexec.exec()
-        print("SQL実行終了")
+        logger.info("SQL実行終了")
     except IOError as ie:
-        print(ie)
+        logger.error(ie)
         sys.exit(2)
     except Exception as ex:
         print(ex)
+        logger.error(ex)
         sys.exit(3)
     finally:
         if sqlexec is not None:

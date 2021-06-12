@@ -74,7 +74,6 @@ class FSQLExecTest(unittest.TestCase):
     def test_cmd_normal(self) ->None:
         """コマンドを実行しSQLが実行されているかテストする。
         """
-        self.drop_db_objects()
         sql_files = [
                 "tests/data/CTblog_entry.sql", "tests/data/CTtest.sql",
         ]
@@ -84,16 +83,16 @@ class FSQLExecTest(unittest.TestCase):
         runner = CliRunner()
         result = runner.invoke(cmd, opts)
 
-        expected = ["test", "blog_entry", ]
+        expected = ["test", "blog_entry"]
         tables =  self.table_name_list()
-        self.drop_db_objects()
+        print(tables)
         self.assertTrue(self.in_any(tables, expected))
 
     def in_any(self, array: Sequence[Any], search: Sequence[Any]) -> bool:
         """配列に検索する配列の要素が含まれているか
         """
         for entry in search:
-            if not entry in array:
+            if  entry not in array:
                 return False
         return True
 
@@ -144,6 +143,7 @@ class FSQLExecTest(unittest.TestCase):
         try:
             ini_file = "tests/conf/postgres.ini"
             self.__dbcon = pypostgres.get_config_connection(ini_file, "PostgreSQL")
+            self.drop_db_objects()
         except Exception as ex:
             print("DB接続エラー")
             raise ex
@@ -154,7 +154,7 @@ class FSQLExecTest(unittest.TestCase):
         """
         dbcon = self.__dbcon
         if self.__dbcon is not None:
-            self.drop_db_objects()
+#             self.drop_db_objects()
             dbcon.commit()
             dbcon.close()
 
