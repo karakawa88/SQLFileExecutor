@@ -73,7 +73,7 @@ def create_sql_files(include_file: Sequence[str], exclude_file: str) -> list[str
     check_file_list_exists(ret)
     return ret
 
-def create_SQLFileExecutor(sql_files: Sequence[str], ini_file: str) -> SQLFileExecutor:
+def create_SQLFileExecutor(sql_files: Sequence[str], ini_file: str, error_exec: bool) -> SQLFileExecutor:
     """SQLFileExecutorオブジェクトを作成して返す。
     Args:
         sql_files (Sequence[str]): SQLファイルのリスト
@@ -87,7 +87,7 @@ def create_SQLFileExecutor(sql_files: Sequence[str], ini_file: str) -> SQLFileEx
     # DB接続
     dbcon = pypostgres.get_config_connection(ini_file, 'PostgreSQL')
     logger.debug("DB接続" + str(dbcon))
-    sqlexec = SQLFileExecutor(sql_files, dbcon)
+    sqlexec = SQLFileExecutor(sql_files, dbcon, error_exec)
     return sqlexec
 
 @click.command()
@@ -95,7 +95,7 @@ def create_SQLFileExecutor(sql_files: Sequence[str], ini_file: str) -> SQLFileEx
 @click.option("--ini-file", "ini_file", type=str, default="postgres.ini", help="DB接続.iniファイル")
 @click.option("--error_exec", "error_exec", is_flag=True, help="エラーが起きても処理を継続する")
 @click.argument("sql_files", nargs=-1)
-def cmd(exclude_file: str, ini_file: str, sql_files: Sequence[str]) -> None:
+def cmd(exclude_file: str, ini_file: str, sql_files: Sequence[str], error_exec: bool) -> None:
     sqlexec = None
     try:
         logger.debug("ini file: " + ini_file)

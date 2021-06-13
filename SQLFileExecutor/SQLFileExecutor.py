@@ -63,7 +63,7 @@ class SQLFileExecutor():
         self.__sql_files: Sequence[str] = copy.copy(sql_files) # type: ignore
         self.__sql_commands: list[list[str]] = [];
         self.__error_exec: bool = error_exec
-        self.__errors = []
+        self.__errors: list[dict[str, Any]] = []
         self.__dbcon: Any = dbcon
         self._read_sql()
         logger.debug("SQL File: " + str(self.__sql_files))
@@ -131,7 +131,7 @@ class SQLFileExecutor():
                         logger.error('Error: SQLFile={file},SQL {sql}'.format(file=sql_file,
                             sql=sql))
                         logger.error(traceback.format_exc())
-                        self.errors.append({"file": sql_file, "sql": sql, "exception": ex})
+                        self.errors.append({"file": sql_file, "sql": sql, "exception": ex}) # type: ignore
                         # 処理継続フラグがFalseなら処理を即終了
                         if not self.error_exec:
                             raise ex
