@@ -83,7 +83,14 @@ setup(
     # *.py以外のデーターファイルを含める
     # package_data = {'パッケージ名': ['データーファイルのパス']}
     # データーファイルのパスは相対パス
-    package_data={'libpyka': ['conf/*']}
+    package_data={'libpyka': ['conf/*']},
+
+    # エントリーポイント
+    entry_points={
+        'console_scripts':[
+            'fsqlexec = fsqlexec:main',
+        ],
+    },
 )
 
 
