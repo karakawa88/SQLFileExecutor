@@ -12,6 +12,7 @@ from db import pypostgres
 from db.SQLException import SQLException
 from SQLFileExecutor import SQLFileExecutor
 from logging import getLogger
+import os
 
 logger = getLogger(__name__)
 
@@ -89,6 +90,7 @@ class SQLFileExecutorTest(unittest.TestCase):
             IOError: DB接続情報のiniファイル読み込みエラー
             Exception: DB接続エラー
         """
+        sys.path.append(os.path.abspath("./src"))
         try:
             # DB接続
             ini_file = "conf/postgres.ini"
