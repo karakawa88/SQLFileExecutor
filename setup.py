@@ -26,7 +26,7 @@ def get_requirements(fname: str) -> list[str]:
 
 # バージョン・製作者・Emain・URLなどをライブラリの__init__.pyから取得する
 package_name = 'SQLFileExecutor'
-root_dir = package_name
+root_dir = 'src'
 with open(os.path.join(root_dir, '__init__.py'), 'r') as fp:
     init_text = fp.read()
     version = re.search(r'__version__\s*=\s*[\'\"](.+?)[\'\"]', init_text).group(1)
@@ -83,7 +83,7 @@ setup(
     # *.py以外のデーターファイルを含める
     # package_data = {'パッケージ名': ['データーファイルのパス']}
     # データーファイルのパスは相対パス
-    package_data={'libpyka': ['conf/*']},
+    package_data={'SQLFileExecutor': ['conf/*']},
 
     # エントリーポイント
     entry_points={

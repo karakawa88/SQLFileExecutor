@@ -42,7 +42,7 @@ jobs:
                 key: deps-{{ checksum "requirements.txt" }}
             - run:
                 command: |
-                    python3 -m mypy --config-file=mypy.ini SQLFileExecutor
+                    python3 -m mypy --config-file=mypy.ini src
 workflows:
   version: 2
   all:

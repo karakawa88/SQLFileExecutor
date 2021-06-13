@@ -10,7 +10,7 @@ import psycopg2
 import unittest
 from db import pypostgres
 from db.SQLException import SQLException
-from SQLFileExecutor.SQLFileExecutor import SQLFileExecutor
+from SQLFileExecutor import SQLFileExecutor
 from logging import getLogger
 
 logger = getLogger(__name__)

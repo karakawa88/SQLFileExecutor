@@ -13,7 +13,7 @@ from collections.abc import Sequence, Iterable
 import sys
 from pathlib import Path
 from db import pypostgres
-from .SQLFileExecutor import SQLFileExecutor
+from SQLFileExecutor import SQLFileExecutor
 import click
 from logging import getLogger
 

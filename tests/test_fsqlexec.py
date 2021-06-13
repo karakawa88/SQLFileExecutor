@@ -11,10 +11,11 @@ import unittest
 from db import pypostgres
 from db.SQLException import SQLException
 from SQLFileExecutor import SQLFileExecutor
-from SQLFileExecutor.fsqlexec import check_file_list_exists, fname_line_to_array, create_sql_files
-from SQLFileExecutor.fsqlexec import cmd
+from fsqlexec import check_file_list_exists, fname_line_to_array, create_sql_files
+from fsqlexec import cmd
 from click.testing import CliRunner
 from logging import getLogger
+import sys
 
 logger = getLogger(__name__)
 
@@ -177,6 +178,7 @@ class FSQLExecTest(unittest.TestCase):
         except Exception as ex:
             print("DB接続エラー")
             raise ex
+        print(sys.path)
 
     def tearDown(self) -> None:
         """テストの後処理
