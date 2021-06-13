@@ -1,3 +1,4 @@
+sys.path.append(os.path.abspath("./src"))
 from typing import Optional, Union, Any
 from typing import NoReturn
 from typing import Dict
@@ -171,7 +172,6 @@ class FSQLExecTest(unittest.TestCase):
         """テストの前処理
         DBの接続を取得する。
         """
-        sys.path.append(os.path.abspath("./src"))
         try:
             ini_file = "tests/conf/postgres.ini"
             self.__dbcon = pypostgres.get_config_connection(ini_file, "PostgreSQL")
