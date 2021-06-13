@@ -11,7 +11,9 @@ import unittest
 from db import pypostgres
 from db.SQLException import SQLException
 from SQLFileExecutor.SQLFileExecutor import SQLFileExecutor
+from logging import getLogger
 
+logger = getLogger(__name__)
 
 # PostgreSQLのカーソルの型
 CUR = TypeVar('CUR')
@@ -52,17 +54,18 @@ class SQLFileExecutorTest(unittest.TestCase):
         return [row[0] for row in result]
     
 
+    def match_list_fn(self, match_list: list[str], search_list: list[str]) -> bool:
+        for v in search_list:
+            if v not in match_list:
+                return False
+        return True
+
     def test_sql_exec(self) -> None:
         """ SQLFileExecutorクラスのSQL実行をテストする。
         テストSQL文ファイルで作成したテーブルインデックスが作成されたかテストする。
         Raises:
             AssertionError: テスト失敗
         """
-        def match_list_fn(match_list: list[str], search_list: list[str]) -> bool:
-            for v in search_list:
-                if v not in match_list:
-                    return False
-            return True
 
         sql_files = ["tests/data/CTtest.sql", "tests/data/CTblog_entry.sql"]
         dbcon = self.__dbcon
@@ -74,8 +77,8 @@ class SQLFileExecutorTest(unittest.TestCase):
             cur = dbcon.cursor()
             tables = self.db_object_names("TABLE", cur)
             indexs = self.db_object_names("INDEX", cur)
-            self.assertTrue(match_list_fn(tables, SQLFileExecutorTest.TEST_TABLES)
-                                and match_list_fn(indexs, SQLFileExecutorTest.TEST_INDEX))
+            self.assertTrue(self.match_list_fn(tables, SQLFileExecutorTest.TEST_TABLES)
+                                and self.match_list_fn(indexs, SQLFileExecutorTest.TEST_INDEX))
         except Exception as ex:
             raise ex
 
@@ -118,6 +121,48 @@ class SQLFileExecutorTest(unittest.TestCase):
             finally:
                 self.drop_db_objects()
                 
+    def test_error_exec(self) -> None:
+        """SQLFileExecutorのerror_execフラグをテストする。
+        """
+        sql_files = [
+                        "tests/data/CTtest.sql", 
+                        "tests/data/error_table.sql",
+                        "tests/data/CTblog_entry.sql",
+                    ]
+        expected = ["test", "blog_entry"]
+        dbcon = self.__dbcon
+        sqlexec = None
+        try:
+            sqlexec = SQLFileExecutor(sql_files, dbcon, True)
+            sqlexec.exec()
+                
+            cur = dbcon.cursor()
+            tables = self.db_object_names("TABLE", cur)
+            self.assertTrue(self.match_list_fn(tables, expected))
+        except Exception as ex:
+            logger.error(ex)
+        finally:
+            self.drop_db_objects()
+
+    def test_error_exec_no(self) -> None:
+        """error_execフラグがFalseのエラーが起きたら処理を終了するかテスト。
+        """
+        sql_files = [
+                        "tests/data/CTtest.sql", 
+                        "tests/data/error_table.sql",
+                        "tests/data/CTblog_entry.sql",
+                    ]
+        expected = ["test"]
+        dbcon = self.__dbcon
+        try:
+            sqlexec = SQLFileExecutor(sql_files, dbcon, True)
+            sqlexec.exec()
+        except Exception as ex:
+            logger.error(ex)
+            cur = dbcon.cursor()
+            tables = self.db_object_names("TABLE", cur)
+            self.assertTrue(self.match_list_fn(tables, expected) and len(sqlexec.errors) >= 1)
+
 
     def drop_db_objects(self) -> None:
         """テストで作成したDBのオブジェクトを全て削除する。

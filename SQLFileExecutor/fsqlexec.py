@@ -93,6 +93,7 @@ def create_SQLFileExecutor(sql_files: Sequence[str], ini_file: str) -> SQLFileEx
 @click.command()
 @click.option("--exclude-file", "exclude_file", type=str, default=None, help="Exclude SQL file")
 @click.option("--ini-file", "ini_file", type=str, default="postgres.ini", help="DB接続.iniファイル")
+@click.option("--error_exec", "error_exec", is_flag=True, help="エラーが起きても処理を継続する")
 @click.argument("sql_files", nargs=-1)
 def cmd(exclude_file: str, ini_file: str, sql_files: Sequence[str]) -> None:
     sqlexec = None
@@ -102,7 +103,7 @@ def cmd(exclude_file: str, ini_file: str, sql_files: Sequence[str]) -> None:
         logger.info("SQL File: " + str(sql_files))
         sql_files = create_sql_files(sql_files, exclude_file)
         logger.info("Exec SQL File: " + str(sql_files))
-        sqlexec = create_SQLFileExecutor(sql_files, ini_file)
+        sqlexec = create_SQLFileExecutor(sql_files, ini_file, error_exec)
         sqlexec.exec()
         logger.info("SQL実行終了")
     except IOError as ie:

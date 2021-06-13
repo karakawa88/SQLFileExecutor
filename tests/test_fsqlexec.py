@@ -14,6 +14,9 @@ from SQLFileExecutor import SQLFileExecutor
 from SQLFileExecutor.fsqlexec import check_file_list_exists, fname_line_to_array, create_sql_files
 from SQLFileExecutor.fsqlexec import cmd
 from click.testing import CliRunner
+from logging import getLogger
+
+logger = getLogger(__name__)
 
 class FSQLExecTest(unittest.TestCase):
     """fsqlexecモジュールのテスト。コマンドもテストする。
@@ -80,13 +83,40 @@ class FSQLExecTest(unittest.TestCase):
         db_ini_file = "tests/conf/postgres.ini"
         opts = [ "--ini-file", db_ini_file ]
         opts.extend(sql_files)
-        runner = CliRunner()
-        result = runner.invoke(cmd, opts)
+        try:
+            runner = CliRunner()
+            result = runner.invoke(cmd, opts)
+            
+            expected = ["test", "blog_entry"]
+            tables =  self.table_name_list()
+            self.assertTrue(self.in_any(tables, expected))
+        except Exception as ex:
+            logger.error(str(ex))
+        finally:
+            self.drop_db_objects()
 
+    def test_cmd_error_exec(self) -> None:
+        """オプション--error-execでエラーが起きても処理が継続されるかテスト
+        """
+        sql_files = [
+                        "tests/data/CTtest.sql", 
+                        "tests/data/error_table.sql",
+                        "tests/data/CTblog_entry.sql",
+                    ]
         expected = ["test", "blog_entry"]
-        tables =  self.table_name_list()
-        print(tables)
-        self.assertTrue(self.in_any(tables, expected))
+        db_ini_file = "tests/conf/postgres.ini"
+        opts = [ "--ini-file", db_ini_file , "--error-exec" ]
+        opts.extend(sql_files)
+        try:
+            runner = CliRunner()
+            result = runner.invoke(cmd, opts)
+
+            tables = self.table_name_list()
+            self.assertTrue(match_list_fn(tables, expected))
+        except Exception as ex:
+            logger.error(ex)
+        finally:
+            self.drop_db_objects()
 
     def in_any(self, array: Sequence[Any], search: Sequence[Any]) -> bool:
         """配列に検索する配列の要素が含まれているか
@@ -111,7 +141,7 @@ class FSQLExecTest(unittest.TestCase):
             ret = pypostgres.db_object_names("TABLE", cur)
             return ret
         except Exception as ex:
-            print(ex)
+            logger.error(ex)
             raise ex
         finally:
             if db_conn is not None:

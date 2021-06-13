@@ -31,10 +31,18 @@ DBはPostgreSQLを使用し、psycopg2のモジュールのコネクタを使用
 Args:
     sql_files (list[str]):   SQL文のファイル
     dbcon (psycopg2.Connection): DBコネクション
+    error_exec (bool): エラーがあっても処理を継続する
 Attributes:
     sql_files (list[str]): 複数のSQLファイルのリスト。
     sql_commands (list[list[str]]): 
         リストのリストでSQLコマンドが格納されており一つのリストはsql_filesのSQLファイルに対応する。
+    errors (Dict[str, Any]):
+        エラーの情報。次の情報が辞書の配列で格納される。
+        {
+            "sql_file":     SQLファイル名,
+            "sql":          SQL文
+            "exception":    エラーが発生した例外オブジェクト
+        }
 
 使用方法
 dbcon = ...   # DBコネクションオブジェクト
@@ -51,9 +59,11 @@ class SQLFileExecutor():
     SQLCOMMANDS = ['SELECT', 'INSERT', 'DELETE', 'UPDATE', 'CREATE', 'ALTER', 'DROP']
     
     # コンストラクタ
-    def __init__(self, sql_files: Sequence[str], dbcon: Any):
+    def __init__(self, sql_files: Sequence[str], dbcon: Any, error_exec: bool=False):
         self.__sql_files: Sequence[str] = copy.copy(sql_files) # type: ignore
-        self.__sql_commands: list[list[str]]= [];
+        self.__sql_commands: list[list[str]] = [];
+        self.__error_exec: bool = error_exec
+        self.__errors = []
         self.__dbcon: Any = dbcon
         self._read_sql()
         logger.debug("SQL File: " + str(self.__sql_files))
@@ -111,16 +121,20 @@ class SQLFileExecutor():
         try:
             cur = dbcon.cursor(cursor_factory=psycopg2.extras.DictCursor)
             for idx, commands in enumerate(self.sql_commands):
-                logger.debug('実行SQLファイル: ' + self.sql_files[idx])
+                sql_file = self.sql_files[idx]
+                logger.debug('実行SQLファイル: ' + sql_file)
                 for sql in commands:
                     try:
                         logger.debug('SQL: ', sql)
                         cur.execute(sql)
-                    except psycopg2.Error as ex:
-                        logger.error('Error: SQLFile={file},SQL {sql}'.format(file=self.sql_files[idx],
+                    except Exception as ex:
+                        logger.error('Error: SQLFile={file},SQL {sql}'.format(file=sql_file,
                             sql=sql))
                         logger.error(traceback.format_exc())
-                        raise ex
+                        self.errors.append({"file": sql_file, "sql": sql, "exception": ex})
+                        # 処理継続フラグがFalseなら処理を即終了
+                        if not self.error_exec:
+                            raise ex
         except Exception as ex:
             msg = 'Error: SQL実行エラー sql={}'.format(sql)
             logger.error(msg)
@@ -158,5 +172,20 @@ class SQLFileExecutor():
         """
         ret = copy.copy(self.__sql_commands) # type: ignore
         return ret
-
-
+    
+    @property
+    def error_exec(self) -> bool:
+        """処理継続フラグを返す。
+        Returns:
+            bool:   True エラーが起きても処理継続
+                    False エラーが起きたら即終了
+        """
+        return self.__error_exec
+    
+    @property
+    def errors(self) -> Sequence[dict[str, Any]]:
+        """エラーの情報を返す。
+        Returns:
+        Sequence[dict[str, Any]]: エラー情報 
+        """
+        return self.__errors
