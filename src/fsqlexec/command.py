@@ -13,7 +13,7 @@ from collections.abc import Sequence, Iterable
 import sys
 from pathlib import Path
 from db import pypostgres
-from SQLFileExecutor import SQLFileExecutor
+from fsqlexec.SQLFileExecutor import SQLFileExecutor
 import click
 from logging import getLogger
 
@@ -118,8 +118,16 @@ def cmd(exclude_file: str, ini_file: str, sql_files: Sequence[str], error_exec: 
             sqlexec.close()
 
 
+
 def main() -> None:
     cmd()
+
+# *importでimportするクラス・関数
+__all__ = [
+    "check_file_list_exists", "fname_line_to_array", 
+    "create_sql_files", "create_SQLFileExecutor",
+    "cmd", "main"
+]
 
 if __name__ == '__main__':
     main()

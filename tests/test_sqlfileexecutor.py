@@ -13,7 +13,7 @@ import psycopg2
 import unittest
 from db import pypostgres
 from db.SQLException import SQLException
-from SQLFileExecutor import SQLFileExecutor
+from fsqlexec  import SQLFileExecutor
 from logging import getLogger
 import os
 

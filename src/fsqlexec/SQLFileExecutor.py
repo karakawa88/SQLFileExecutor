@@ -189,3 +189,6 @@ class SQLFileExecutor():
         Sequence[dict[str, Any]]: エラー情報 
         """
         return self.__errors
+
+# *importでimportするクラス・関数
+__all__ = ["SQLFileExecutor"]

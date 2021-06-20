@@ -27,7 +27,7 @@ def get_requirements(fname: str) -> list[str]:
 # バージョン・製作者・Emain・URLなどをライブラリの__init__.pyから取得する
 package_name = 'SQLFileExecutor'
 root_dir = 'src'
-with open(os.path.join(root_dir, '__init__.py'), 'r') as fp:
+with open(os.path.join(root_dir, 'fsqlexec', '__init__.py'), 'r') as fp:
     init_text = fp.read()
     version = re.search(r'__version__\s*=\s*[\'\"](.+?)[\'\"]', init_text).group(1)
     license = re.search(r'__license__\s*=\s*[\'\"](.+?)[\'\"]', init_text).group(1)
@@ -61,7 +61,7 @@ setup(
     long_description_content_type='text/markdown',
 
     #pythonのバージョンは3.6以上で4未満
-    python_requires='~=3.8',
+    python_requires='~=3.9',
 
     #PyPI上で検索閲覧される情報
     # OS, ライセンス, Pythonバージョン

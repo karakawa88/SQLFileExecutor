@@ -6,7 +6,7 @@ venv
 dist
 build
 tmp
-*.egg-info
+*.egg*
 *.whl
 *.tar.gz
 *.lock
@@ -16,4 +16,5 @@ chapter15
 libpyka
 gitpush.sh
 pypi-upload.sh
+test.txt
 

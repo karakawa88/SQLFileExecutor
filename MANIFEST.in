@@ -3,9 +3,11 @@ include *.md
 include mypy.ini
 include requirements.txt
 include test-requirements.txt
+include *.egg*
 recursive-include conf *
 recursive-include data *
 recursive-include tests *
+recursive-include src *
 exclude sample.py
 exclude chapter15
 exclude conf/postgres.ini
@@ -13,5 +15,5 @@ exclude libpyka
 exclude tmp
 exclude gitpush.sh
 exclude pypi-upload.sh
-
+exclude test.txt
 
