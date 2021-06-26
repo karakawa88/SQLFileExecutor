@@ -25,7 +25,7 @@ def get_requirements(fname: str) -> list[str]:
     return requires
 
 # バージョン・製作者・Emain・URLなどをライブラリの__init__.pyから取得する
-package_name = 'SQLFileExecutor'
+package_name = 'fsqlexec'
 root_dir = 'src'
 with open(os.path.join(root_dir, 'fsqlexec', '__init__.py'), 'r') as fp:
     init_text = fp.read()
